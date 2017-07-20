@@ -49,8 +49,8 @@ class Peaks(hax.minitrees.TreeMaker):
     """
     extra_branches = ['peaks.*']
     peak_name = ['s2_%s_' % order for order in ['1','2','3','4','5']]
-    peak_fields = ['area', 'range_50p_area', 'x', 'y', 'z', 'delay_is2','goodness_of_fit']
-    main_fields = ['s2','s2_delay_is2','s2_range_50p_area',
+    peak_fields = ['area', 'range_50p_area', 'x', 'y', 'z', 'delay_is2','delay_is1','goodness_of_fit']
+    main_fields = ['s2','s2_delay_is1','s2_range_50p_area',
                   's1','x','y','z','cs2','cs1','goodness_of_fit']
     __version__ = '0.1.1'
     
@@ -74,7 +74,7 @@ class Peaks(hax.minitrees.TreeMaker):
                 
                 if field == 's2':
                     _x = s2.area
-                elif field == 's2_delay_is2':
+                elif field == 's2_delay_is1':
                     _x = (s2.hit_time_mean - s1.hit_time_mean)
                 elif field == "s2_range_50p_area":
                     _x = list(s2.range_area_decile)[5]
