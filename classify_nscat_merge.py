@@ -53,36 +53,57 @@ def better_df(df):
 	return ndf
 
 def classify_df(df):
-	""" 
-	takes a "better_df" ready for classification
-	and classifies the events as  SS or not-SS 
+    """ 
+    takes a "better_df" ready for classification
+    and classifies the events as  SS or not-SS 
 
-	ed_a is the largest energy deposition
-	ed_b is second largest energy deposition
+    ed_a is the largest energy deposition
+    ed_b is second largest energy deposition
 
-	s_dist is the distance between these scatters
+    s_dist is the distance between these scatters
 
-	"""
-	# dummy
-	df['class'] = 4
+    """
+    # dummy
+    df['class'] = 4
 
-	ed_a_lower_lim = 15.
-	ed_a_upper_lim = 100.
+    ed_b_lim = 0.5
 
-	ed_b_lower_lim = 15.
+    s_dist_lim = 0.5
+    
+    """ defining the classifications
+    
+    dataframe              description                      class
+    
+    ss_1   ::   nFax (number of energy depositions) = 1     :: 1
+    ss_2   ::   2nd energy deposition less than cutoff      :: 2
+    ss_3   ::   distance between scatters less than cutoff  :: 3
+    ms     ::   everything else                             :: 4
+    
+    """
 
-	s_dist_lim = 200.
-
-	for index, event in df.iterrows():
-		if (
-			ed_a_lower_lim < event.ed_a and
-			 event.ed_a < ed_a_upper_lim and 
-			 ed_b_lower_lim < event.ed_b and 
-			 event.s_dist > s_dist_lim
-			):
-			event['class'] = 1
-		else:
-			event['class'] = 2
+    ss_1 = df[df.nFax == 1]
+    
+    ss_2 = df[
+        (df.nFax > 1) &
+        (df.ed_b < ed_b_lim)
+    ]
+    
+    ss_3 = df[
+        (df.nFax > 1) &
+        (df.ed_b >= ed_b_lim) &
+        (df.s_dist < s_dist_lim)
+    ]
+    
+    ss_1['class'] = 1
+    ss_2['class'] = 2
+    ss_3['class'] = 3
+    
+    ms = df.drop(ss_1.index).drop(ss_2.index).drop(ss_3.index)
+    ms['class'] = 4
+    
+    df = ms.append([ss_1,ss_2,ss_3]).sort()
+    
+    return df
 
 # -----------------------------------------------------------------
 # need a minitree to extract features from root file
@@ -268,4 +289,4 @@ fax_processed_df['class'] = class_scatter['class']
 
 
 # export the classified, ready to use data
-fax_processed_df.to_pickle(output_filepath+output_filename)
+fax_processed_df.to_pickle(output_filepath+output_filename+".pkl")
